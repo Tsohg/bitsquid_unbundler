@@ -1,11 +1,3 @@
-// u32: bitsquid header -> 0xf0000004
-// u32: total size of uncompressed files
-// u32: reserved space or padding.
-// 
-// For each zlib chunk until the total size has been met:
-//  u32: chunk length. next byte is the start of a zlib file.
-//  [i->len]: zlib chunk.
-
 use std::{fs, io};
 use std::io::Write;
 
@@ -47,7 +39,7 @@ impl<'a> Unbundler {
 
         let file_count = inflated_stream.read_uint();
         let _unknown = inflated_stream.read(256);
-        let _files = inflated_stream.read((16 * file_count) as usize);
+        let _unknown2 = inflated_stream.read((16 * file_count) as usize);
 
         for _i in 0..file_count {
             let unbundled_file = UnbundledFile::new(&mut inflated_stream);
