@@ -1,21 +1,25 @@
-mod unbundler;
-mod file_writer;
-pub mod byte_stream;
-
 use std::env;
 
-use unbundler::UnbundledFile;
+mod unbundler;
+mod file_writer;
 
-use crate::unbundler::Unbundler;
-use crate::file_writer::FileWriter;
+pub mod byte_stream;
+pub mod unbundled_file;
+
+/*
+    Use cases:
+        Put in bundled folder. execute. it dumps unpacked stuff into a sub-directory.
+        Given argument -find will look for the data_win32_bundled on its own then treat it as if only input was given.
+        Given argument -find and output directory as arg, find the data_win32_bundled and dump to output dir.
+        Given input directory as arg. Create subdirectory wherever it is located and dump unpacked stuff into it.
+        Given input and output directories as args, read from input dir, dump into output dir.
+    */
 
 fn main() {
-    env::set_var("RUST_BACKTRACE", "1");
-    let input_dir = "D:\\Disk Drive Downloads\\Steam\\steamapps\\common\\MagickaWizardWars\\data_win32_bundled\\00c4323d97062055";
-    let output_dir = "C:\\Users\\Nathan\\Desktop\\test";
-    let mut unbundler = Unbundler::new(input_dir);
-    let files = unbundler.unbundle_files();
-    FileWriter::write_files(output_dir, &files)
-    //let file_path = format!("{}\\{:#x}.{}", output_dir, unbundled.path, FileWriter::lookup_extension_name(unbundled.extension));
-    //FileWriter::write_file(&file_path, &unbundled);
+    let args: Vec<String> = env::args().collect();
+    let input_dir: String;
+    let output_dir: String;
+    if args.contains(&"-find".to_string()) {
+        
+    }
 }

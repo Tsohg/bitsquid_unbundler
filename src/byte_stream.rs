@@ -30,11 +30,9 @@ impl ByteStream {
 
     pub fn read(&mut self, len: usize) -> Vec<u8> {
         let mut result = vec![];
-        let mut i = 0;
         
-        while i < len {
+        for _i in 0..len {
             result.push(self.read_byte());
-            i += 1;
         }
 
         result
@@ -72,7 +70,7 @@ mod tests {
     }
 
     #[test]
-    fn read_unit() {
+    fn read_uint() {
         let mut stream = 
             ByteStream::new(Vec::from(32_u32.to_le_bytes()));
         assert_eq!(32_u32, stream.read_uint());

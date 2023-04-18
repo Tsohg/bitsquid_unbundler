@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
-use crate::unbundler::UnbundledFile;
+use crate::unbundled_file::UnbundledFile;
 
 pub struct FileWriter {
 

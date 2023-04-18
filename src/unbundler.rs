@@ -6,16 +6,17 @@
 //  u32: chunk length. next byte is the start of a zlib file.
 //  [i->len]: zlib chunk.
 
-use std::fs;
+use std::{fs, io};
 use std::io::Write;
-use crate::byte_stream::ByteStream;
+
 use flate2::write::ZlibDecoder;
 
-#[derive(Clone)]
-pub struct UnbundledFile {
-    pub path: u64,
-    pub extension: u64,
-    pub data: Vec<u8>,
+use crate::unbundled_file::UnbundledFile;
+use crate::byte_stream::ByteStream;
+
+pub enum UnbundlerError {
+    DecoderFinish,
+    DecoderWriteAll,
 }
 
 pub struct Unbundler {
@@ -23,67 +24,81 @@ pub struct Unbundler {
 }
 
 impl<'a> Unbundler {
-    pub fn new(compressed_file_path: &'a str) -> Unbundler {
-        Unbundler {
-            compressed_stream: ByteStream::new(fs::read(compressed_file_path).unwrap()),
-        }
+    pub fn new(compressed_file_path: &'a str) -> Result<Unbundler, io::Error> {
+        let file = match fs::read(compressed_file_path) {
+            Ok(file) => file,
+            Err(e) => return Err(e),
+        };
+
+        Ok(Unbundler {
+            compressed_stream: ByteStream::new(file),
+        })
     }
 
-    pub fn unbundle_files(&mut self) -> Vec<UnbundledFile> {
+    pub fn unbundle_files(&mut self) -> Result<Vec<UnbundledFile>, UnbundlerError> {
         let mut unbundled_files: Vec<UnbundledFile> = vec![];
 
-        let mut inflated_stream = ByteStream::new(self.inflate_bundle());
+        let inflated_bundle = match self.inflate_bundle() {
+            Ok(inflated_bundle) => inflated_bundle,
+            Err(e) => return Err(e),
+        };
 
+        let mut inflated_stream = ByteStream::new(inflated_bundle);
 
         let file_count = inflated_stream.read_uint();
         let _unknown = inflated_stream.read(256);
         let _files = inflated_stream.read((16 * file_count) as usize);
 
         for _i in 0..file_count {
-            let extension = inflated_stream.read_ulong();
-            let path = inflated_stream.read_ulong();
-            let has_data = inflated_stream.read_ulong();
-
-            let data;
-            if has_data > 0 {
-                let _flag = inflated_stream.read_uint();
-                let size = inflated_stream.read_uint();
-                let _unknown2 = inflated_stream.read_uint();
-                data = inflated_stream.read(size as usize);
-            } else {
-                data = vec![];
-            }
-
-            let unbundled_file = UnbundledFile {
-                extension: extension,
-                path: path,
-                data: data,
-            };
-
+            let unbundled_file = UnbundledFile::new(&mut inflated_stream);
             unbundled_files.push(unbundled_file);
         }
 
-        unbundled_files 
+        Ok(unbundled_files) 
     }
 
-    pub fn inflate_bundle(&mut self) -> Vec<u8> {
+    pub fn inflate_bundle(&mut self) -> Result<Vec<u8>, UnbundlerError> {
         let _header = self.compressed_stream.read_uint();
         let _size = self.compressed_stream.read_uint();
         let _reserved = self.compressed_stream.read_uint();
 
-        assert_eq!(_header, 0xf0000004);
-        assert_eq!(_reserved, 0);
-
         let mut result: Vec<u8> = vec![];
 
         while self.compressed_stream.remaining_bytes() > 0 {
-            let len = self.compressed_stream.read_uint();
-            let mut uncompressed_file = Vec::new();
-            let mut decoder = ZlibDecoder::new(uncompressed_file);
-            decoder.write_all(&self.compressed_stream.read(len as usize)).unwrap();
-            uncompressed_file = decoder.finish().unwrap();
-            result.append(&mut uncompressed_file);
+            match self.append_block(&mut result) {
+                Ok(_) => {},
+                Err(e) => return Err(e),
+            }
         }
-        result
+
+        Ok(result)
+    }
+
+    fn append_block(&mut self, buffer: &mut Vec<u8>) -> Result<(), UnbundlerError> {
+        let len = self.compressed_stream.read_uint();
+        if len == (1<<16) {
+            buffer.append(&mut self.compressed_stream.read(len as usize))
+        } else {
+            let mut block = match self.decompress_block(len as usize) {
+                Ok(block) => block,
+                Err(e) => return Err(e),
+            };
+            buffer.append(&mut block);
+        }
+        Ok(())
+    }
+
+    fn decompress_block(&mut self, len: usize) -> Result<Vec<u8>, UnbundlerError> {
+        let mut decoder = ZlibDecoder::new(vec![]);
+
+        match decoder.write_all(&self.compressed_stream.read(len as usize)) {
+            Ok(_) => {},
+            Err(_) => return Err(UnbundlerError::DecoderWriteAll),
+        }
+
+        match decoder.finish() {
+            Ok(block) => Ok(block),
+            Err(_) => Err(UnbundlerError::DecoderFinish),
+        }
     }
 }
