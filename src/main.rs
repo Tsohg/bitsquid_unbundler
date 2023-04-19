@@ -1,4 +1,6 @@
-use std::env;
+use std::path::PathBuf;
+
+use clap::{arg, command, value_parser, ArgAction, Command};
 
 mod unbundler;
 mod file_writer;
@@ -16,10 +18,14 @@ pub mod unbundled_file;
     */
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
-    let input_dir: String;
-    let output_dir: String;
-    if args.contains(&"-find".to_string()) {
-        
-    }
+    let matches = command!()
+        .name("bitsquid_unbundler")
+        .version("0.1.0")
+        .author("Alias")
+        .about("Extracts assets from bitsquid compiled bundles.")
+        .arg(arg!(-i --indir <INPUT_DIRECTORY> "The input directory containing the bitsquid compiled assets.").required(false).value_parser(value_parser!(PathBuf)))
+        .arg(arg!(-o --outdir <OUTPUT_DIRECTORY> "The output directory which the extracted files shall be written to.").required(false).value_parser(value_parser!(PathBuf)))
+        .arg(arg!(-fmww --findmww).required(false))
+        .get_matches();
+
 }
