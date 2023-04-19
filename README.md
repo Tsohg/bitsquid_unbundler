@@ -18,7 +18,7 @@ The file format of a bundle is a collection of zlib files. The first step is to 
 | size  | contents |
 | ------------- | ------------- |
 | u32 | (file count) the number of files that exist within the file |
-| 256 bytes | unknown at present |
+| 256 bytes | checksum of some kind. |
 | 16 * (file count) | file names and extensions (repeated below for some reason) |
 | repeat for (file count) iterations | -- |
 | u64 | murmur32 hashed file extension. see file_writer.rs for the lookup table. |

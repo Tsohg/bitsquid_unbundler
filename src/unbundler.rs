@@ -38,8 +38,8 @@ impl<'a> Unbundler {
         let mut inflated_stream = ByteStream::new(inflated_bundle);
 
         let file_count = inflated_stream.read_uint();
-        let _unknown = inflated_stream.read(256);
-        let _unknown2 = inflated_stream.read((16 * file_count) as usize);
+        let _checksum = inflated_stream.read(256);
+        let _file_names_and_extensions = inflated_stream.read((16 * file_count) as usize);
 
         for _i in 0..file_count {
             let unbundled_file = UnbundledFile::new(&mut inflated_stream);
