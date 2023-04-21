@@ -1,3 +1,11 @@
+# Build
+Clone the repo.
+Open a command prompt in the repo directory. If you see the README you are in the right place.
+```
+cargo build --release
+```
+The executable should now be in the /target/ directory.
+
 # Usage
 ```
 Usage: bitsquid_unbundler.exe [OPTIONS]
