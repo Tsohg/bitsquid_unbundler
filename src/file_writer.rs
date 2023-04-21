@@ -3,15 +3,12 @@ use std::io::prelude::*;
 use std::path::Path;
 use crate::unbundled_file::UnbundledFile;
 
-pub struct FileWriter {
-
-}
-
+pub struct FileWriter {}
 impl FileWriter {
-    pub fn write_files(output_directory: &str, files: &Vec<UnbundledFile>) {
+    pub fn write_files(output_directory: &str, files: Vec<UnbundledFile>) {
         for file in files.iter() {
             let file_path = format!("{}\\{:#x}.{}", output_directory, file.path, FileWriter::lookup_extension_name(file.extension));
-            FileWriter::write_file(&file_path, &file);
+            FileWriter::write_file(&file_path, file);
         }
     }
 

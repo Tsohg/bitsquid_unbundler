@@ -6,7 +6,9 @@ use flate2::write::ZlibDecoder;
 use crate::unbundled_file::UnbundledFile;
 use crate::byte_stream::ByteStream;
 
+#[derive(Debug)]
 pub enum UnbundlerError {
+    IOError,
     DecoderFinish,
     DecoderWriteAll,
 }
@@ -21,13 +23,12 @@ impl<'a> Unbundler {
             Ok(file) => file,
             Err(e) => return Err(e),
         };
-
         Ok(Unbundler {
             compressed_stream: ByteStream::new(file),
         })
     }
 
-    pub fn unbundle_files(&mut self) -> Result<Vec<UnbundledFile>, UnbundlerError> {
+    pub fn unbundle_file(&mut self) -> Result<Vec<UnbundledFile>, UnbundlerError> {
         let mut unbundled_files: Vec<UnbundledFile> = vec![];
 
         let inflated_bundle = match self.inflate_bundle() {
