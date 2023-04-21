@@ -39,3 +39,6 @@ The file format of a bundle is a collection of zlib files. The first step is to 
 | u32 | (file size) the size of the file |
 | u32 | unknown at present |
 | (file size) | the file's data. this is what can be split off into its own file with the path as its name and the file extension after the string is looked up. |
+
+### Side Note
+This unbundler ignores .stream, .data, and .ini files in the bundled directory if they exist.
