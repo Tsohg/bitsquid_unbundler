@@ -1,6 +1,5 @@
-# bitsquid_unbundler
-Extracts the files from bitsquid compiled assets.
-
+# Usage
+```
 Usage: bitsquid_unbundler.exe [OPTIONS]
 
 Options:
@@ -10,6 +9,7 @@ Options:
                                         Defaults to creating a directory in the present working directory of the executable for output.
   -h, --help                       Print help
   -V, --version                    Print version           Print version
+```
 
 # File Format of Bundles
 The file format of a bundle is a collection of zlib files. The first step is to uncompress the zlib files into its own file. The resulting file contains all the files which need to be split off into their own file. (Separated into Bundle Unpacking then File Unpacking).
