@@ -15,12 +15,7 @@ use crate::file_writer::FileWriter;
 use crate::unbundler::{Unbundler, UnbundlerError};
 use crate::unbundled_file::UnbundledFile;
 
-
-const DIRECTORY_ERROR_MSG: &str = "Could not create a directory for the output. This may be due to insuffient permissions for creating a directory at this location.";
-
 fn main() {
-    std::env::set_var("RUST_BACKTRACE", "1");
-
     let matches = command!()
         .name("bitsquid_unbundler")
         .version("1.0.0")
@@ -41,7 +36,7 @@ fn create_output_directory(matches: &ArgMatches) -> PathBuf {
         Some(outdir) => {
             match outdir.to_str() {
                 Some(str) => {
-                    fs::create_dir(str).expect(DIRECTORY_ERROR_MSG);
+                    fs::create_dir(str).unwrap();
                     PathBuf::from(str)
                 },
                 None => create_output_directory_in_pwd()
